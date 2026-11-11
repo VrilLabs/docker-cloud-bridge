@@ -1,8 +1,8 @@
 {
-  "my-app": {
-    "repo": "https://github.com/YOUR_ORG/YOUR_REPO.git",
+  "docker-cloud-bridge": {
+    "repo": "https://github.com/VrilLabs/docker-cloud-bridge.git",
     "tasks": {
-      "test": "command -v node\ncommand -v npm\nnpm ci --ignore-scripts\nnpm test\nnpm run build"
+      "test": "command -v node\ncommand -v npm\nnpm ci --ignore-scripts\nnpm test"
     }
   }
 }
