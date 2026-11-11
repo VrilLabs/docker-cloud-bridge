@@ -38,6 +38,19 @@ Railway notes:
 * Services with a volume redeploy with brief downtime, and a redeploy kills any running build. On restart that job is marked `interrupted`; check Docker Console for the orphaned sandbox before retrying. Avoid deploying while a build is running.
 * `projects.json` is committed and shipped with the deploy, so edit the allowlist (repo URLs and scripts) before `railway up`.
 
+## Agent skill
+
+`skills/docker-cloud-bridge/SKILL.md` teaches coding agents how to run builds through the bridge and how to deploy and debug it. The same file is checked in where each tool looks for project skills:
+
+| Tool | Location |
+|---|---|
+| Universal (`npx skills add VrilLabs/docker-cloud-bridge`, any Agent Skills client) | `skills/docker-cloud-bridge/` |
+| Claude Code | `.claude/skills/docker-cloud-bridge/` |
+| Codex (also read by OpenCode) | `.agents/skills/docker-cloud-bridge/` |
+| OpenCode | `.opencode/skills/docker-cloud-bridge/` |
+
+`skills/` is the canonical copy. If you edit it, copy the file to the other three locations so they don't drift.
+
 ## Connect Perplexity
 
 Plugins -> Add custom -> Add MCP connector -> Remote.
