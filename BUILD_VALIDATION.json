@@ -1,0 +1,8 @@
+{
+  "node": "/usr/local/bin/node",
+  "tests": "TAP version 13\n# Subtest: constant time bearer comparison\nok 1 - constant time bearer comparison\n  ---\n  duration_ms: 1.246989\n  ...\n# Subtest: allowlisted job and pinned SHA\nok 2 - allowlisted job and pinned SHA\n  ---\n  duration_ms: 0.480098\n  ...\n# Subtest: reject credential and arbitrary host URL\nok 3 - reject credential and arbitrary host URL\n  ---\n  duration_ms: 0.266304\n  ...\n1..3\n# tests 3\n# suites 0\n# pass 3\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 64.210326\n",
+  "returncode": 0,
+  "server.mjs": 0,
+  "policy.mjs": 0,
+  "scripts/smoke.mjs": 0
+}

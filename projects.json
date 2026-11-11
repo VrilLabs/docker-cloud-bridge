@@ -1,0 +1,8 @@
+{
+  "my-app": {
+    "repo": "https://github.com/YOUR_ORG/YOUR_REPO.git",
+    "tasks": {
+      "test": "command -v node\ncommand -v npm\nnpm ci --ignore-scripts\nnpm test\nnpm run build"
+    }
+  }
+}
