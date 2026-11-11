@@ -13,7 +13,30 @@ No Docker socket, host shell execution, OAuth callback, model API key or sbx ins
 5. Edit projects.json to allow only repositories and scripts you trust. Only exact 40-character commit SHAs accepted. Caller cannot choose a URL, shell command, kit or secret.
 6. `npm test`. For a no-cost transport test set MOCK_DOCKER=1, then `npm start`. In another terminal run `node --env-file=.env scripts/smoke.mjs`.
 7. Set MOCK_DOCKER=0 and restart for real execution. Use a disposable repository for the first build. Shell kit must have git and your build tools; example task checks node/npm and fails if missing. This package does NOT assume shell kit contains a full language toolchain. Customize scripts to bootstrap trusted pinned tooling, or adapt the SDK launch to a reviewed image/kit using Docker's image documentation.
-8. Run behind an HTTPS reverse proxy on a persistent host. Caddyfile supplied; set BRIDGE_DOMAIN in the Caddy service environment. Run Caddy on the same host as this app. Keep app bound to 127.0.0.1, firewall port 8080, expose 443 (and 80 for ACME if needed). Run app under a non-root service account with a service manager and an explicit working directory. Do not expose it directly over plain HTTP.
+8. Deploy on Railway (below). It terminates HTTPS for you, so no reverse proxy is needed.
+
+## Deploy on Railway
+
+Requires the Railway CLI (`railway login`). Run from this directory. `railway.json` sets the start command, `/healthz` healthcheck, restart policy and a single replica.
+
+```bash
+railway init                      # or: railway link
+railway add --service docker-ci-bridge
+railway volume add --mount-path /data   # persistent job records; REQUIRED (the app refuses to start on Railway without one)
+railway variables --set "BRIDGE_API_KEY=$(openssl rand -hex 32)" --set "MOCK_DOCKER=1"
+railway up                        # first deploy in mock mode (no billable sandboxes)
+railway domain                    # public HTTPS URL -> https://<domain>/mcp
+```
+
+Then validate: `BRIDGE_URL=https://<domain>/mcp BRIDGE_API_KEY=<key> node scripts/smoke.mjs`.
+
+For real execution set the Docker credentials **in the Railway dashboard** (so they never enter shell history or chat): `DOCKER_ID`, `DOCKER_PAT`, and `MOCK_DOCKER=0`, then redeploy. Optional: `ALLOWED_ORIGIN`, `PROJECTS_FILE`.
+
+Railway notes:
+* The app binds `0.0.0.0` and `$PORT` automatically when `RAILWAY_ENVIRONMENT_NAME` is set; locally it stays on `127.0.0.1`.
+* `DATA_DIR` defaults to `RAILWAY_VOLUME_MOUNT_PATH`. Keep `numReplicas` at 1: the one-build-at-a-time lock and `request_id` dedupe are in-process.
+* Services with a volume redeploy with brief downtime, and a redeploy kills any running build. On restart that job is marked `interrupted`; check Docker Console for the orphaned sandbox before retrying. Avoid deploying while a build is running.
+* `projects.json` is committed and shipped with the deploy, so edit the allowlist (repo URLs and scripts) before `railway up`.
 
 ## Connect Perplexity
 
@@ -37,7 +60,7 @@ Example request: list approved tasks, then ask me to approve a test of project m
 * Task execution is a billable, side-effecting operation, even for tests. Tool description instructs client to request approval, but does NOT provide a server-side human approval gate. Possession of bridge API key permits running ANY allowlisted task/commit. Use only trusted connector owners. Do not add production deployment credentials unless you implement an independent approval gate.
 * An allowlisted repo is not a security boundary against malicious code within that repo. Tests/package scripts execute code from the selected commit. Do not execute unreviewed fork/PR code with secrets. npm ci --ignore-scripts only disables installation lifecycle scripts; npm test/build still execute code.
 * Logs are untrusted and may include secrets deliberately printed by code. Only bridge key and Docker PAT are redacted; this is not a generic secret scanner. Docker PAT remains on bridge host and is never deliberately injected into sandbox.
-* Require HTTPS, keep API key secret, rotate credentials, limit inbound traffic/rate at proxy. Origin-bearing requests rejected unless ALLOWED_ORIGIN matches; non-browser MCP requests normally omit Origin.
+* Railway provides HTTPS only; there is no rate limiting, so keep the API key secret (32+ chars enforced) and rotate credentials. Origin-bearing requests rejected unless ALLOWED_ORIGIN matches; non-browser MCP requests normally omit Origin.
 
 ## Verification status
 

@@ -10,7 +10,10 @@ if (!key || key.length < 32) throw new Error('BRIDGE_API_KEY must have at least 
 const mock = process.env.MOCK_DOCKER === '1';
 if (!mock && (!process.env.DOCKER_ID || !process.env.DOCKER_PAT)) throw new Error('Set DOCKER_ID and DOCKER_PAT');
 const config = JSON.parse(await readFile(process.env.PROJECTS_FILE || 'projects.json', 'utf8'));
-const dir = process.env.DATA_DIR || './data';
+// Railway mounts a persistent volume at RAILWAY_VOLUME_MOUNT_PATH; job records must survive restarts.
+const onRailway = Boolean(process.env.RAILWAY_ENVIRONMENT_NAME);
+const dir = process.env.DATA_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH || './data';
+if (onRailway && !process.env.DATA_DIR && !process.env.RAILWAY_VOLUME_MOUNT_PATH) throw new Error('Attach a Railway volume (or set DATA_DIR): job records and request_id dedupe need persistent disk');
 await mkdir(dir, {recursive:true});
 const jobs = new Map();
 const save = async j => { const p = `${dir}/${j.id}.json`; await writeFile(p+'.tmp', JSON.stringify(j), {mode:0o600}); await rename(p+'.tmp', p); };
@@ -88,4 +91,4 @@ app.post('/mcp',async(req,res)=>{
   catch { if(!res.headersSent)res.status(500).json({error:'MCP request failed'}); }
 });
 app.all('/mcp',(_req,res)=>res.sendStatus(405));
-app.listen(Number(process.env.PORT || 8080), process.env.HOST || '127.0.0.1',()=>console.log('Docker CI bridge ready; mock='+mock));
+app.listen(Number(process.env.PORT || 8080), process.env.HOST || (onRailway ? '0.0.0.0' : '127.0.0.1'),()=>console.log('Docker CI bridge ready; mock='+mock));
