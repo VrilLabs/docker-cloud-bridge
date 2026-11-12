@@ -1,8 +1,25 @@
 {
   "my-app": {
     "repo": "https://github.com/YOUR_ORG/YOUR_REPO.git",
+    "auth": { "tokenEnv": "GH_CLONE_TOKEN" },
+    "status": { "provider": "github", "tokenEnv": "GH_STATUS_TOKEN" },
     "tasks": {
-      "test": "command -v node\ncommand -v npm\nnpm ci --ignore-scripts\nnpm test\nnpm run build"
+      "test": "command -v node\ncommand -v npm\nnpm ci --ignore-scripts\nnpm test",
+      "build": {
+        "script": "command -v node\ncommand -v npm\nnpm ci --ignore-scripts\nnpm test\nnpm run build",
+        "artifacts": ["dist/", "coverage/lcov.info"],
+        "forward": {
+          "NPM_TOKEN": { "mode": "inject", "hosts": ["registry.npmjs.org"], "header": "Authorization", "format": "Bearer %s" },
+          "DEPLOY_ENV": { "mode": "env" }
+        }
+      }
+    }
+  },
+  "public-tool": {
+    "repo": "https://gitlab.com/YOUR_GROUP/YOUR_REPO.git",
+    "status": { "provider": "webhook", "url": "https://hooks.example.com/ci-status", "secretEnv": "CI_HOOK_SECRET" },
+    "tasks": {
+      "test": "command -v node\nnpm ci --ignore-scripts\nnpm test"
     }
   }
 }
