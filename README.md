@@ -1,7 +1,7 @@
 # Docker Cloud CI MCP Bridge
 
 A small single-user fallback CI execution bridge. Not a proxy for Docker's MCP Gateway.
-Perplexity -> HTTPS /mcp (Bearer API key) -> Docker Sandboxes SDK (Docker ID + PAT).
+Cloud Container (i.e. Perplexity Computer) -> HTTPS /mcp (Bearer API key) -> Docker Sandboxes SDK (Docker ID + PAT).
 No Docker socket, host shell execution, OAuth callback, model API key or sbx installation required.
 
 ## Quick start (Node 22+, one replica only)
