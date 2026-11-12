@@ -1,6 +1,7 @@
 {
   "docker-cloud-bridge": {
     "repo": "https://github.com/VrilLabs/docker-cloud-bridge.git",
+    "auth": { "tokenEnv": "GH_CLONE_TOKEN" },
     "tasks": {
       "test": "command -v node\ncommand -v npm\nnpm ci --ignore-scripts\nnpm test"
     }
